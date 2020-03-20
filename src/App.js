@@ -99,8 +99,6 @@ class App extends Component {
     const value = evt.target.value
     const id = evt.target.id
     const aux = { ...options };
-    aux[id] = value;
-    this.setState({ options: aux });
     if (id === "country") {
       let auxJobs = [ ...this.state.allJobs ]
       if (allJobsFilteredByName.length !== allJobs.length) {
@@ -127,7 +125,28 @@ class App extends Component {
       }
     } else if (id === "company") {
       let auxJobs = [ ...this.state.allJobs ]
-      if (allJobs.length) {
+      // if (allJobs.length) {
+      //   auxJobs.forEach(job => {
+      //     if (job.company && job.company.name === value) {
+      //       result.push(job)
+      //       job = {}
+      //     }
+      //     return result;
+      //   })
+      //   this.setState({ allJobsFilteredByName: result});
+      // }
+      if (allJobsFilteredByName.length !== allJobs.length) {
+        allJobsFilteredByName.forEach(job => {
+          if (job.company && job.company.name === value) {
+            result.push(job)
+            job = {}
+          }
+          return result;
+        })
+        console.log(result)
+        this.setState({ allJobsFilteredByName: result});
+      }
+      if (allJobsFilteredByName.length === allJobs.length) {
         auxJobs.forEach(job => {
           if (job.company && job.company.name === value) {
             result.push(job)
@@ -135,6 +154,7 @@ class App extends Component {
           }
           return result;
         })
+        console.log(result)
         this.setState({ allJobsFilteredByName: result});
       }
     }
@@ -197,8 +217,8 @@ class App extends Component {
               (*) Los filtros se realizan sobre el listado filtrado siempre que se haya buscado por nombre previamente, caso contrario es sobre el total de JOBS. 
               </div>
             <div className="col-3 mAuto">
-                <select class="custom-select" value={options.name} id="country" onChange={this.filterRows.bind(this)}>
-                  <option selected disabled value="">{(options && options.name) ? options.name : 'Seleeciona País'}</option>
+                <select class="custom-select" value={options.country} id="country" onChange={this.filterRows.bind(this)}>
+                  <option selected disabled value="">{(options && options.country) ? options.country : 'Seleeciona País'}</option>
                   {
                     (allCountriesLoaded && allCountriesLoaded.length) &&
                     allCountriesLoaded.map(job => <option selected value={job.name}>{job.name}</option>)
@@ -207,7 +227,7 @@ class App extends Component {
               </div>
               <div className="col-3 mAuto">
                 <select class="custom-select" value={options.company} id="company" onChange={this.filterRows.bind(this)}>
-                <option selected disabled value="">Seleeciona Compañia</option>
+                <option selected disabled value="">{(options && options.countcompanyry) ? options.company : 'Seleeciona Compañía'}</option>
                 {
                     (allCompaniesLoaded && allCompaniesLoaded.length) &&
                     allCompaniesLoaded.map(job => <option selected value={job.name}>{job.name}</option>)
