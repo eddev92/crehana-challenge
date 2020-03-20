@@ -25,17 +25,20 @@ class App extends Component {
   componentDidMount() {
     this.runQueryGetJobs().then(res => {
       console.log(res)
-      this.setState({ allJobs: res.data.jobs },
+      this.setState({ allJobs: res.data.jobs, allJobsFilteredByName: res.data.jobs },
         this.loadCountriesCombo(res.data.jobs),
         this.loadCompaniesCombo(res.data.jobs)
         );
     })
   }
-
-  componentDidUpdate() {
-    if (this.state.options.name === "" && this.state.allJobsFilteredByName.length > 0) {
-        this.setState({ allJobsFilteredByName: [] })
-    }
+  loadJobjs = () => {
+    this.runQueryGetJobs().then(res => {
+      console.log(res)
+      this.setState({ allJobs: res.data.jobs, allJobsFilteredByName: res.data.jobs },
+        this.loadCountriesCombo(res.data.jobs),
+        this.loadCompaniesCombo(res.data.jobs)
+        );
+    })
   }
 
   loadCountriesCombo = (allJobs) => {
@@ -47,9 +50,34 @@ class App extends Component {
         }   
       })
     }
-    console.log(result)
-    this.setState({ allCountriesLoaded: result })
+    const withOutDuplicate = this.find_duplicate_in_array(result);
+    this.setState({ allCountriesLoaded: withOutDuplicate })
   }
+
+  find_duplicate_in_array = (arra1) => {
+    let result = [];
+    let objTitle
+    // Declare a new array 
+          
+    // Declare an empty object 
+    let uniqueObject = {}; 
+    for (let i in arra1) { 
+      
+      // Extract the title 
+      objTitle = arra1[i]['name']; 
+
+      // Use the title as the index 
+      uniqueObject[objTitle] = arra1[i]; 
+  } 
+    
+  // Loop to push unique object into array 
+  for (let i in uniqueObject) { 
+      result.push(uniqueObject[i]); 
+  } 
+
+    return result;
+
+}
 
   loadCompaniesCombo = (allJobs) => {
     let result = [];
@@ -60,27 +88,67 @@ class App extends Component {
         }   
       })
     }
-    console.log(result)
-    this.setState({ allCompaniesLoaded: result })
+    const withOutDuplicate = this.find_duplicate_in_array(result);
+    console.log(withOutDuplicate)
+    this.setState({ allCompaniesLoaded: withOutDuplicate })
   }
 
   filterRows = (evt) => {
-    const { options } = this.state;
+    const { options, allJobs, allJobsFilteredByName } = this.state;
+    let result = []
     const value = evt.target.value
     const id = evt.target.id
     const aux = { ...options };
-    console.log(value)
-    console.log(id)
-    console.log(options)
-    if (!value && id) {
-      aux.name = '';
-      this.setState({ options: aux });
+    aux[id] = value;
+    this.setState({ options: aux });
+    if (id === "country") {
+      let auxJobs = [ ...this.state.allJobs ]
+      if (allJobsFilteredByName.length !== allJobs.length) {
+        allJobsFilteredByName.forEach(job => {
+          if (job.countries.length && job.countries[0] && job.countries[0].name === value) {
+            result.push(job)
+            job = {}
+          }
+          return result;
+        })
+        console.log(result)
+        this.setState({ allJobsFilteredByName: result});
+      }
+      if (allJobsFilteredByName.length === allJobs.length) {
+        auxJobs.forEach(job => {
+          if (job.countries.length && job.countries[0] && job.countries[0].name === value) {
+            result.push(job)
+            job = {}
+          }
+          return result;
+        })
+        console.log(result)
+        this.setState({ allJobsFilteredByName: result});
+      }
+    } else if (id === "company") {
+      let auxJobs = [ ...this.state.allJobs ]
+      if (allJobs.length) {
+        auxJobs.forEach(job => {
+          if (job.company && job.company.name === value) {
+            result.push(job)
+            job = {}
+          }
+          return result;
+        })
+        this.setState({ allJobsFilteredByName: result});
+      }
     }
     else {
-      if (value && id) {
-  
-        aux[id] = value;
+      if (!value && id) {
+        aux.name = '';
         this.setState({ options: aux });
+      }
+      else {
+        if (value && id) {
+    
+          aux[id] = value;
+          this.setState({ options: aux });
+        }
       }
     }
   }
@@ -88,10 +156,8 @@ class App extends Component {
   searchJob = (e) => {
     const { options, allJobs } = this.state;
     let resultFiltered = [];
-    // if (e) {
       if (e) e.preventDefault()
       if(options && options.name && allJobs) {
-        console.log(options.name)
         resultFiltered = Filter.filterByName(options.name, allJobs)
         console.log(resultFiltered)
         this.setState({ allJobsFilteredByName: resultFiltered });
@@ -105,47 +171,52 @@ class App extends Component {
     })
     return a;
   }
+
+  showAll = () => this.loadJobjs();
   
   render() {
     const { options, allCompaniesLoaded, allCountriesLoaded, allJobsFilteredByName } = this.state;
-    console.log(allJobsFilteredByName)
+    console.log(options)
     return (
       <div className="App container-fluid">
-        <form>
-          <div className="form-row align-items-center">
-            <div className="col-4 my-1">
-              <label className="sr-only" for="inlineFormInputGroupUsername">Username</label>
-              <div className="input-group">
-                <input type="text" className="form-control" value={options.name} id="name" onChange={this.filterRows.bind(this)} placeholder="Ingresa el nombre del empleo..." />
+            <div className="row">
+              <div className="col-6 mLft20 my-1">
+                <label className="sr-only" for="inlineFormInputGroupUsername">Username</label>
+                <div className="input-group">
+                  <input type="text" className="form-control" value={options.name} id="name" onChange={this.filterRows.bind(this)} placeholder="Ingresa el nombre del empleo..." />
+                </div>
+              </div>
+              <div className="col-3" style={{'display': 'inline-flex'}}>
+                <button onClick={this.searchJob} className="btn btn-primary" disabled={options && options.name.length === 0}>Buscar</button>
+                <button onClick={this.showAll} className="btn btn-primary" style={{'marginLeft': '5px'}}>Ver todos</button>
               </div>
             </div>
-            <div className="col-2 my-1">
-              <button onClick={this.searchJob} className="btn btn-primary">Buscar</button>
-            </div>
-            <div className="col-3 my-1">
-              <select class="custom-select" value={options.country} id="country" onChange={this.filterRows.bind(this)}>
-                <option selected disabled value="">Seleeciona País</option>
+            <div className="row">
+              <div className="col-12">
+              (*) La búsqueda por nombre es sobre el total de JOBS por defecto.<br/>
+              (*) Los filtros se realizan sobre el listado filtrado siempre que se haya buscado por nombre previamente, caso contrario es sobre el total de JOBS. 
+              </div>
+            <div className="col-3 mAuto">
+                <select class="custom-select" value={options.name} id="country" onChange={this.filterRows.bind(this)}>
+                  <option selected disabled value="">{(options && options.name) ? options.name : 'Seleeciona País'}</option>
+                  {
+                    (allCountriesLoaded && allCountriesLoaded.length) &&
+                    allCountriesLoaded.map(job => <option selected value={job.name}>{job.name}</option>)
+                  }
+                </select>
+              </div>
+              <div className="col-3 mAuto">
+                <select class="custom-select" value={options.company} id="company" onChange={this.filterRows.bind(this)}>
+                <option selected disabled value="">Seleeciona Compañia</option>
                 {
-                  (allCountriesLoaded && allCountriesLoaded.length) &&
-                  allCountriesLoaded.map(job => <option selected value={job.name}>{job.name}</option>)
-                }
-                {/* 
-                <option>...</option> */}
-              </select>
+                    (allCompaniesLoaded && allCompaniesLoaded.length) &&
+                    allCompaniesLoaded.map(job => <option selected value={job.name}>{job.name}</option>)
+                  }
+                </select>
+              </div>
             </div>
-            <div className="col-3 my-1">
-              <select class="custom-select" value={options.company} id="company" onChange={this.filterRows.bind(this)}>
-              <option selected disabled value="">Seleeciona Compañia</option>
-              {
-                  (allCompaniesLoaded && allCompaniesLoaded.length) &&
-                  allCompaniesLoaded.map(job => <option selected value={job.name}>{job.name}</option>)
-                }
-              </select>
-            </div>
-          </div>
-        </form>
-        <TableComponent elements={(allJobsFilteredByName && allJobsFilteredByName.length > 0) ? allJobsFilteredByName : this.state.allJobs} />
-      </div>
+          <TableComponent elements={allJobsFilteredByName} />
+        </div>
     );
   }
 }

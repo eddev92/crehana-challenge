@@ -11,3 +11,44 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.mAuto {
+  margin: auto !important;
+}
+.mLft20 {
+  margin-left: 20%;
+}
+table.scroll {
+  margin-top: 25px;
+  border-spacing: 0;
+  border: 2px solid black;
+}
+
+table.scroll tbody,
+table.scroll thead { display: block; }
+
+thead tr th { 
+  height: 30px;
+  line-height: 30px;
+  /* text-align: left; */
+}
+
+table.scroll tbody {
+  height: 350px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+tbody { border-top: 2px solid black; }
+thead th.number-row, tbody tr td.number-row  {
+  width: 10% !important;
+}
+tbody td, thead th {
+  width: 18%; /* Optional */
+  /* border-right: 1px solid black; */
+  /* white-space: nowrap; */
+}
+
+tbody td:last-child, thead th:last-child {
+  border-right: none;
+}

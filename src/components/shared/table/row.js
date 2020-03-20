@@ -13,7 +13,7 @@ const Row = ({element = {}, index = 0}) => {
   if (element) {
         return (
           <tr>
-            <td>{index + 1}</td>
+            <td className="number-row">{index + 1}</td>
             <td>{element.title}</td>
             <td>{allCountries || 'Sin País'}</td>
             <td>{element.company.name}</td>
